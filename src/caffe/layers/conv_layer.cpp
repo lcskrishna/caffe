@@ -1,6 +1,7 @@
 #include <vector>
 
 #include "caffe/layers/conv_layer.hpp"
+#include "dump_data.h"
 
 namespace caffe {
 
@@ -19,8 +20,32 @@ void ConvolutionLayer<Dtype>::compute_output_shape() {
     const int_tp output_dim = (input_dim + 2 * pad_data[i] - kernel_extent)
         / stride_data[i] + 1;
     this->output_shape_.push_back(output_dim);
+
   }
+
+  std::cout << " kernel : ";
+  for(int i=0;i < this->num_spatial_axes_;i++){
+    std::cout << kernel_shape_data[i] << " ";
+  }
+
+  std::cout << "stride : ";
+  for(int i=0;i< this->num_spatial_axes_;i++){
+      std::cout << stride_data[i] << " ";
+  }
+
+  std::cout << "pad : ";
+  for(int i=0;i< this->num_spatial_axes_;i++){
+      std::cout << pad_data[i] << " ";
+  }
+
+  std::cout << "dilation : ";
+  for(int i=0;i<this->num_spatial_axes_;i++){
+      std::cout << dilation_data[i] << " ";
+  }
+
+
 }
+
 
 template<typename Dtype>
 void ConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
@@ -38,6 +63,31 @@ void ConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       }
     }
   }
+
+  vector<int_tp> output_shape = top[0]->shape();
+  int output_dim=1;
+  for(int i = 0 ; i < output_shape.size();i++){
+    output_dim = output_dim * output_shape[i];
+  }
+
+  std::string layer_name = this->layer_param_.name();
+  std::string temp = layer_name;
+  formatFileName(layer_name,"/","_");
+  std::string fileName = "/home/svcbuild/Work/caffe/examples/CIFAR_TEST/out/"+ layer_name +".f32";
+  std::ofstream outfile(fileName, std::ios::out | std::ios::binary);
+  if(outfile){
+      std::cout <<"File is created." << std::endl;
+  }else{
+      std::cout <<"File is not created." << std::endl;
+  }
+  std::cout << "The size of the layer:" << temp << " is " << output_dim << std::endl;
+    const float * output_data = (const float *) top[0]->cpu_data();
+    for(int j=0;j<output_dim;j++){
+        float out_val = output_data[j];
+        outfile.write((char *)&out_val, sizeof(float));
+    }
+
+
 }
 
 template<typename Dtype>

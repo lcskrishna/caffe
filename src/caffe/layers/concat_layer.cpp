@@ -2,13 +2,16 @@
 
 #include "caffe/layers/concat_layer.hpp"
 #include "caffe/util/math_functions.hpp"
-
+#include "dump_data.h"
 namespace caffe {
 
 template <typename Dtype>
 void ConcatLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
   const ConcatParameter& concat_param = this->layer_param_.concat_param();
+
+  //std::cout << this->layer_param_.name() << std::endl;
+
   CHECK(!(concat_param.has_axis() && concat_param.has_concat_dim()))
       << "Either axis or concat_dim should be specified; not both.";
 }
@@ -51,7 +54,15 @@ void ConcatLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
     top[0]->ShareData(*bottom[0]);
     top[0]->ShareDiff(*bottom[0]);
   }
+
+  std::cout << "dim concat output : ";
+  for(int i=0;i<top_shape.size();i++){
+    std::cout << top_shape[i] << " ";
+  }
+  std::cout << std::endl;
+
 }
+
 
 template <typename Dtype>
 void ConcatLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
@@ -71,6 +82,30 @@ void ConcatLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     }
     offset_concat_axis += bottom_concat_axis;
   }
+
+  vector<int_tp> output_shape = top[0]->shape();
+  int output_dim=1;
+  for(int i = 0 ; i < output_shape.size();i++){
+    output_dim = output_dim * output_shape[i];
+  }
+
+  std::string layer_name = this->layer_param_.name();
+  std::string temp = layer_name;
+  formatFileName(layer_name,"/","_");
+  std::string fileName = "/home/svcbuild/Work/caffe/examples/CIFAR_TEST/out/"+ layer_name +".f32";
+  std::ofstream outfile(fileName, std::ios::out | std::ios::binary);
+  if(outfile){
+      std::cout <<"File is created." << std::endl;
+  }else{
+      std::cout <<"File is not created." << std::endl;
+  }
+  std::cout << "The size of the layer:" << temp << " is " << output_dim << std::endl;
+    const float * output_data = (const float *) top[0]->cpu_data();
+    for(int j=0;j<output_dim;j++){
+        float out_val = output_data[j];
+        outfile.write((char *)&out_val, sizeof(float));
+    }
+
 }
 
 template <typename Dtype>

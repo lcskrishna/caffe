@@ -3,6 +3,7 @@
 
 #include "caffe/layers/softmax_layer.hpp"
 #include "caffe/util/math_functions.hpp"
+#include "dump_data.h"
 
 namespace caffe {
 
@@ -27,6 +28,16 @@ void SoftmaxLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   scale_dims[softmax_axis_] = 1;
 #endif
   scale_.Reshape(scale_dims);
+
+  std::cout << "dim softmax output : ";
+  vector<int_tp> soft_out = top[0]->shape();
+  for(int i=0;i<soft_out.size();i++){
+    std::cout << soft_out[i] << " ";
+  }
+
+  std::cout << std::endl;
+
+
 }
 
 template <typename Dtype>
@@ -63,6 +74,30 @@ void SoftmaxLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       top_data += inner_num_;
     }
   }
+
+  vector<int_tp> output_shape = top[0]->shape();
+  int output_dim=1;
+  for(int i = 0 ; i < output_shape.size();i++){
+    output_dim = output_dim * output_shape[i];
+  }
+
+  std::string layer_name = this->layer_param_.name();
+  std::string temp = layer_name;
+  formatFileName(layer_name,"/","_");
+  std::string fileName = "/home/svcbuild/Work/caffe/examples/CIFAR_TEST/out/"+ layer_name +".f32";
+  std::ofstream outfile(fileName, std::ios::out | std::ios::binary);
+  if(outfile){
+      std::cout <<"File is created." << std::endl;
+  }else{
+      std::cout <<"File is not created." << std::endl;
+  }
+  std::cout << "The size of the layer:" << temp << " is " << output_dim << std::endl;
+    const float * output_data = (const float *) top[0]->cpu_data();
+    for(int j=0;j<output_dim;j++){
+        float out_val = output_data[j];
+        outfile.write((char *)&out_val, sizeof(float));
+    }
+
 }
 
 template <typename Dtype>

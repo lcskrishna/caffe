@@ -18,6 +18,9 @@ void EltwiseLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       "Eltwise layer only takes coefficients for summation.";
   op_ = this->layer_param_.eltwise_param().operation();
   // Blob-wise coefficients for the elementwise operation.
+
+  //std::cout << this->layer_param_.name() << std::endl;
+
   coeffs_ = vector<Dtype>(bottom.size(), 1);
   if (this->layer_param().eltwise_param().coeff_size()) {
     for (int_tp i = 0; i < bottom.size(); ++i) {
@@ -41,6 +44,27 @@ void EltwiseLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
       EltwiseParameter_EltwiseOp_MAX && top.size() == 1) {
     max_idx_.Reshape(bottom[0]->shape());
   }
+
+  /*
+  std::cout << "dim eltwise layer input : " << std::endl;
+  for(int i=0;i < bottom.size();i++){
+     vector<int_tp> bottom_shape = bottom[i]->shape();
+     std::cout<< "Input " << i << " dim" ;
+     for(int j=0;j<bottom_shape.size();j++){
+        std::cout << " " << bottom_shape[j];
+     }
+     std::cout << std::endl;
+  } */
+
+/*
+  std::cout << "dim eltwise output : ";
+  vector<int_tp> top_shape= top[0]->shape();
+  for(int i=0;i < top_shape.size();i++){
+    std::cout << top_shape[i] << " ";
+  }
+  std::cout << std::endl;
+*/
+
 }
 
 template <typename Dtype>

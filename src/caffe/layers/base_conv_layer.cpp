@@ -21,6 +21,10 @@ void BaseConvolutionLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
 
   // Configure the kernel size, padding, stride, and inputs.
   ConvolutionParameter conv_param = this->layer_param_.convolution_param();
+
+  //name of the convolution layer.
+  std::cout << this->layer_param_.name() << std::endl;
+
   force_nd_im2col_ = conv_param.force_nd_im2col();
   channel_axis_ = bottom[0]->CanonicalAxisIndex(conv_param.axis());
   const int_tp first_spatial_axis = channel_axis_ + 1;
@@ -210,13 +214,28 @@ void BaseConvolutionLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   }
   // Shape the tops.
   bottom_shape_ = &bottom[0]->shape();
+  std::cout << "dim conv Input : ";
+  vector<int_tp> inputDims = bottom[0]->shape();
+  for(int_tp i=0;i< inputDims.size(); i++){
+    std::cout << inputDims[i] << " ";
+  }
   compute_output_shape();
   vector<int_tp> top_shape(bottom[0]->shape().begin(),
                         bottom[0]->shape().begin() + channel_axis_);
   top_shape.push_back(num_output_);
+
+  std::cout << "output " ;
+
   for (int_tp i = 0; i < num_spatial_axes_; ++i) {
     top_shape.push_back(output_shape_[i]);
   }
+
+  for(int i=0;i<top_shape.size();i++){
+       std::cout << top_shape[i] << " ";
+  }
+
+  std::cout << std::endl;
+
   for (int_tp top_id = 0; top_id < top.size(); ++top_id) {
     top[top_id]->Reshape(top_shape);
   }
@@ -280,6 +299,7 @@ void BaseConvolutionLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
                 bias_multiplier_.mutable_cpu_data());
     }
   }
+
 }
 
 template<typename Dtype>
@@ -301,6 +321,11 @@ void BaseConvolutionLayer<Dtype>::forward_cpu_gemm(const Dtype* input,
                           col_buff + col_offset_ * g, (Dtype) 0.,
                           output + output_offset_ * g);
   }
+
+
+
+
+
 }
 
 template<typename Dtype>

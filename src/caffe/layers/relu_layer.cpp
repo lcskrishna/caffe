@@ -2,8 +2,9 @@
 #include <vector>
 
 #include "caffe/layers/relu_layer.hpp"
-
+#include "dump_data.h"
 namespace caffe {
+
 
 template <typename Dtype>
 void ReLULayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
@@ -16,6 +17,30 @@ void ReLULayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     top_data[i] = std::max(bottom_data[i], Dtype(0))
         + negative_slope * std::min(bottom_data[i], Dtype(0));
   }
+
+  vector<int_tp> output_shape = top[0]->shape();
+  int output_dim=1;
+  for(int i = 0 ; i < output_shape.size();i++){
+    output_dim = output_dim * output_shape[i];
+  }
+
+  std::string layer_name = this->layer_param_.name();
+  std::string temp = layer_name;
+  formatFileName(layer_name,"/","_");
+  std::string fileName = "/home/svcbuild/Work/caffe/examples/CIFAR_TEST/out/"+ layer_name +".f32";
+  std::ofstream outfile(fileName, std::ios::out | std::ios::binary);
+  if(outfile){
+      std::cout <<"File is created." << std::endl;
+  }else{
+      std::cout <<"File is not created." << std::endl;
+  }
+  std::cout << "The size of the layer:" << temp << " is " << output_dim << std::endl;
+    const float * output_data = (const float *) top[0]->cpu_data();
+    for(int j=0;j<output_dim;j++){
+        float out_val = output_data[j];
+        outfile.write((char *)&out_val, sizeof(float));
+    }
+
 }
 
 template <typename Dtype>

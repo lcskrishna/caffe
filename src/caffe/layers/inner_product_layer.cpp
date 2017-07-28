@@ -3,7 +3,7 @@
 #include "caffe/filler.hpp"
 #include "caffe/layers/inner_product_layer.hpp"
 #include "caffe/util/math_functions.hpp"
-
+#include "dump_data.h"
 namespace caffe {
 
 template<typename Dtype>
@@ -79,7 +79,22 @@ void InnerProductLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
     bias_multiplier_.Reshape(bias_shape);
     caffe_set(M_, Dtype(1), bias_multiplier_.mutable_cpu_data());
   }
+
+  vector<int_tp> input_shape = bottom[0]->shape();
+  vector<int_tp> output_shape = top[0]->shape();
+  std::cout << "dim innerproduct input ";
+  for(int i=0;i<input_shape.size();i++){
+    std::cout << input_shape[i] << " ";
+  }
+
+  std::cout << "output ";
+  for(int i=0;i<output_shape.size();i++){
+      std::cout << output_shape[i] << " ";
+  }
+  std::cout << std::endl;
+
 }
+
 
 template<typename Dtype>
 void InnerProductLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
@@ -95,6 +110,30 @@ void InnerProductLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
                           bias_multiplier_.cpu_data(),
                           this->blobs_[1]->cpu_data(), (Dtype) 1., top_data);
   }
+
+  vector<int_tp> output_shape = top[0]->shape();
+  int output_dim=1;
+  for(int i = 0 ; i < output_shape.size();i++){
+    output_dim = output_dim * output_shape[i];
+  }
+
+  std::string layer_name = this->layer_param_.name();
+  std::string temp = layer_name;
+  formatFileName(layer_name,"/","_");
+  std::string fileName = "/home/svcbuild/Work/caffe/examples/CIFAR_TEST/out/"+ layer_name +".f32";
+  std::ofstream outfile(fileName, std::ios::out | std::ios::binary);
+  if(outfile){
+      std::cout <<"File is created." << std::endl;
+  }else{
+      std::cout <<"File is not created." << std::endl;
+  }
+  std::cout << "The size of the layer:" << temp << " is " << output_dim << std::endl;
+    const float * output_data = (const float *) top[0]->cpu_data();
+    for(int j=0;j<output_dim;j++){
+        float out_val = output_data[j];
+        outfile.write((char *)&out_val, sizeof(float));
+    }
+
 }
 
 template<typename Dtype>
