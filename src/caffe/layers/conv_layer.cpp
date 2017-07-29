@@ -64,6 +64,34 @@ void ConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     }
   }
 
+
+  vector<int_tp> bottom_shape = bottom[0]->shape();
+  int bottom_dim = 1;
+  std::cout << "Bottom Shape is : " << std::endl;
+  for(int i=0;i < bottom_shape.size();i++){
+    std::cout << bottom_shape[i] << " ";
+    bottom_dim = bottom_dim * bottom_shape[i];
+  }
+  std::cout << std::endl;
+
+  std::string bottom_layer_name = "bottom_" + this->layer_param_.name();
+  formatFileName(bottom_layer_name,"/","_");
+  std::string bottomFileName = "/home/svcbuild/Work/caffe/examples/CIFAR_TEST/out/"+ bottom_layer_name +".f32";
+  std::ofstream bottomFile(bottomFileName, std::ios::out | std::ios::binary);
+  if(bottomFile){
+      std::cout <<"File is created." << std::endl;
+  }else{
+      std::cout <<"File is not created." << std::endl;
+  }
+  std::cout << "The size of the layer:" << bottom_layer_name << " is " << bottom_dim << std::endl;
+    const float * bottom_data = (const float *) bottom[0]->cpu_data();
+    for(int j=0;j<bottom_dim;j++){
+        float out_val = bottom_data[j];
+        bottomFile.write((char *)&out_val, sizeof(float));
+    }
+
+
+
   vector<int_tp> output_shape = top[0]->shape();
   int output_dim=1;
   for(int i = 0 ; i < output_shape.size();i++){

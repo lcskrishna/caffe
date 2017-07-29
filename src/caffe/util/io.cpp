@@ -91,6 +91,7 @@ cv::Mat ReadImageToCVMat(const string& filename,
   }
   if (height > 0 && width > 0) {
     cv::resize(cv_img_origin, cv_img, cv::Size(width, height));
+    std::cout << "The size of the image is : " << width << " " << height << std::endl;
   } else {
     cv_img = cv_img_origin;
   }
