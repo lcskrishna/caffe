@@ -3,6 +3,7 @@
 
 #include "caffe/layers/softmax_layer.hpp"
 #include "caffe/util/math_functions.hpp"
+#include "dump_input_output.h"
 
 namespace caffe {
 
@@ -63,6 +64,33 @@ void SoftmaxLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       top_data += inner_num_;
     }
   }
+
+
+    vector<int_tp> output_shape = top[0]->shape();
+    int output_dim=1;
+    for(int i = 0 ; i < output_shape.size();i++){
+        output_dim = output_dim * output_shape[i];
+    }
+
+    std::string layer_name = this->layer_param_.name();
+    formatFileName(layer_name,"/","_");
+    std::string fileName = getFilePath() + layer_name + ".f32";
+    std::cout << "The file path obtained is : " << fileName << std::endl;
+    std::ofstream outfile(fileName, std::ios::out | std::ios::binary);
+    if(outfile){
+        std::cout << "File is created for softmax." << std::endl;
+    }else{
+        std::cout << "File is not executed." << std::endl;
+    }
+    const float * output_data = (const float *) top[0]->cpu_data();
+    for(int j=0;j<output_dim;j++){
+          float out_val = output_data[j];
+          outfile.write((char *)&out_val, sizeof(float));
+    }
+
+    outfile.close();
+
+
 }
 
 template <typename Dtype>

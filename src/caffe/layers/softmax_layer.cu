@@ -14,6 +14,8 @@
 #include "caffe/greentea/greentea_math_functions.hpp"
 #endif
 
+#include "dump_input_output.h"
+
 namespace caffe {
 
 #ifdef USE_CUDA

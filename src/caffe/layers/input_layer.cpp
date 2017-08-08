@@ -19,6 +19,7 @@ void InputLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       top[i]->Reshape(param.shape(shape_index));
     }
   }
+
 }
 
 INSTANTIATE_CLASS(InputLayer);
